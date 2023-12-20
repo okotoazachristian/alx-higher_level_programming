@@ -1,118 +1,115 @@
-#!/usr/bin/python3
+#include <stdio.h>
+#include <Python.h>
 
+/**
+ * print_python_bytes - Prints bytes information
+ *
+ * @p: Python Object
+ * Return: no return
+ */
+void print_python_bytes(PyObject *p)
+{
+	char *string;
+	long int size, i, limit;
 
-class Square:
-    """
-    class square that has attributes:
-        size
-    some attributes are protected from input.
-    """
-    def __init__(self, size=0, position=(0, 0)):
-        """
-        initialization function for our square clasee
-        """
-        if self.__validate_size(size):
-            self.__size = size
-        if self.__validate_pos(position):
-            self.__position = position
+	setbuf(stdout, NULL);
 
-    def __str__(self):
-        """
-        used by print and str.
-        returns a string of user friendly printable
-        """
-        i = 0
-        string = ""
-        if self.__size == 0:
-            string += '\n'
-            return
-        for i in range(0, self.__position[1]):
-            string += '\n'
-        i = 0
-        for i in range(0, self.__size):
-            j = 0
-            x_pad = 0
-            for x_pad in range(0, self.__position[0]):
-                string += ' '
-            for j in range(0, self.__size):
-                string += '#'
-            string += '\n'
-        return string
+	printf("[.] bytes object info\n");
+	if (!PyBytes_Check(p))
+	{
+		printf("  [ERROR] Invalid Bytes Object\n");
+		setbuf(stdout, NULL);
+		return;
+	}
 
-    @property
-    def size(self):
-        """
-        getter for size attribute
-        """
-        return self.__size
+	size = ((PyVarObject *)(p))->ob_size;
+	string = ((PyBytesObject *)p)->ob_sval;
 
-    @size.setter
-    def size(self, value):
-        """
-        setter for size attribute
-        """
-        if self.__validate_size(value):
-            self.__size = value
+	printf("  size: %ld\n", size);
+	printf("  trying string: %s\n", string);
 
-    @property
-    def position(self):
-        """
-        getter for position attribute
-        """
-        return self.__position
+	if (size >= 10)
+		limit = 10;
+	else
+		limit = size + 1;
 
-    @position.setter
-    def position(self, value):
-        """
-        setter for position attribute
-        """
-        if self.__validate_pos(value):
-            self.__position = value
+	printf("  first %ld bytes:", limit);
 
-    def area(self):
-        """
-        calculates the area of the square
-        """
-        return self.__size ** 2
+	for (i = 0; i < limit; i++)
+		if (string[i] >= 0)
+			printf(" %02x", string[i]);
+		else
+			printf(" %02x", 256 + string[i]);
 
-    def my_print(self):
-        """
-        prints the square using '#' characters
-        also takes into account position (x, y) offsets
-        """
-        i = 0
-        if self.__size == 0:
-            print()
-            return
-        for i in range(0, self.__position[1]):
-            print()
-        i = 0
-        for i in range(0, self.__size):
-            j = 0
-            x_pad = 0
-            for x_pad in range(0, self.__position[0]):
-                print(" ", end='')
-            for j in range(0, self.__size):
-                print("#", end='')
-            print()
+	printf("\n");
+	setbuf(stdout, NULL);
+}
 
-    def __validate_size(self, size):
-        """
-        validates the size, checking for errors
-        """
-        if type(size) != int:
-            raise TypeError("size must be an integer")
-        elif size < 0:
-            raise ValueError("size must be >= 0")
-        else:
-            return True
-        return False
+/**
+ * print_python_float - Prints float information
+ *
+ * @p: Python Object
+ * Return: no return
+ */
+void print_python_float(PyObject *p)
+{
+	double val;
+	char *nf;
 
-    def __validate_pos(self, position):
-        """
-        validates the position, checking for type errors
-        """
-        if not isinstance(position, type((0, 0))):
-            raise TypeError("position must be a tuple of 2 positive integers")
-            return False
-        return True
+	setbuf(stdout, NULL);
+	printf("[.] float object info\n");
+
+	if (!PyFloat_Check(p))
+	{
+		printf("  [ERROR] Invalid Float Object\n");
+		setbuf(stdout, NULL);
+		return;
+	}
+
+	val = ((PyFloatObject *)(p))->ob_fval;
+	nf = PyOS_double_to_string(val, 'r', 0, Py_DTSF_ADD_DOT_0, Py_DTST_FINITE);
+
+	printf("  value: %s\n", nf);
+	setbuf(stdout, NULL);
+}
+
+/**
+ * print_python_list - Prints list information
+ *
+ * @p: Python Object
+ * Return: no return
+ */
+void print_python_list(PyObject *p)
+{
+	long int size, i;
+	PyListObject *list;
+	PyObject *obj;
+
+	setbuf(stdout, NULL);
+	printf("[*] Python list info\n");
+
+	if (!PyList_Check(p))
+	{
+		printf("  [ERROR] Invalid List Object\n");
+		setbuf(stdout, NULL);
+		return;
+	}
+
+	size = ((PyVarObject *)(p))->ob_size;
+	list = (PyListObject *)p;
+
+	printf("[*] Size of the Python List = %ld\n", size);
+	printf("[*] Allocated = %ld\n", list->allocated);
+
+	for (i = 0; i < size; i++)
+	{
+		obj = list->ob_item[i];
+		printf("Element %ld: %s\n", i, ((obj)->ob_type)->tp_name);
+
+		if (PyBytes_Check(obj))
+			print_python_bytes(obj);
+		if (PyFloat_Check(obj))
+			print_python_float(obj);
+	}
+	setbuf(stdout, NULL);
+}
