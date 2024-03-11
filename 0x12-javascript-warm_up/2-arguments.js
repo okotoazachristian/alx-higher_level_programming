@@ -1,4 +1,3 @@
-1-multi_languages.js
 #!/usr/bin/node
 if (process.argv.length === 2) {
   console.log('No argument');
