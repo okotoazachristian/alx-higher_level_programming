@@ -1,3 +1,7 @@
 #!/bin/bash
-# takes in a URL as an argument, sends a GET request to the URL, and displays the body of the response
-curl -sX GET $1 -H "X-HolbertonSchool-User-Id: 98" -L
+
+# URL provided as argument
+url=$1
+
+# Sending GET request with curl and displaying response body
+curl -X GET -H "X-School-User-Id: 98" "$url"
