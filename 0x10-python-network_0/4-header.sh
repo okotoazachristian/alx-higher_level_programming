@@ -1,7 +1,3 @@
 #!/bin/bash
-
-# URL provided as argument
-url=$1
-
-# Sending GET request with curl and displaying response body
-curl -X GET -H "X-School-User-Id: 98" "$url"
+# script to send custom headers to servers
+curl -s -H "X-HolbertonSchool-User-Id: 98" "$1"
